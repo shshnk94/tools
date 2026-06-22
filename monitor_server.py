@@ -83,8 +83,10 @@ def make_parser():
 def is_reachable(server: str, count: int, timeout: int) -> bool:
     """Return True if the server responds to at least one ping."""
     try:
+        # macOS expects -W in milliseconds, Linux in seconds
+        w_value = timeout * 1000 if sys.platform == "darwin" else timeout
         result = subprocess.run(
-            ["ping", "-c", str(count), "-W", str(timeout), server],
+            ["ping", "-c", str(count), "-W", str(w_value), server],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
