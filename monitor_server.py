@@ -51,7 +51,6 @@ All flags
 
 import argparse
 import smtplib
-import socket
 import subprocess
 import sys
 import time
@@ -81,23 +80,15 @@ def make_parser():
 
 
 def is_reachable(server: str, count: int, timeout: int) -> bool:
-    """Return True if the server responds to at least one ping."""
-    try:
-        # macOS expects -W in milliseconds, Linux in seconds
-        w_value = timeout * 1000 if sys.platform == "darwin" else timeout
-        result = subprocess.run(
-            ["ping", "-c", str(count), "-W", str(w_value), server],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        return result.returncode == 0
-    except FileNotFoundError:
-        # Fallback: try opening a TCP connection on port 22 (SSH)
-        try:
-            with socket.create_connection((server, 22), timeout=timeout):
-                return True
-        except OSError:
-            return False
+    """Return True if the server responds to ping."""
+    # macOS expects -W in milliseconds, Linux in seconds
+    w_value = timeout * 1000 if sys.platform == "darwin" else timeout
+    result = subprocess.run(
+        ["/sbin/ping", "-c", str(count), "-W", str(w_value), server],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
 
 
 def send_email(args, subject: str, body: str):
